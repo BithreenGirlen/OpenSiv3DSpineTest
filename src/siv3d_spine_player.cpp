@@ -61,11 +61,11 @@ void CSiv3dSpinePlayer::WorkOutDefaultScale()
 
 		if (fScaleX > fScaleY)
 		{
-			m_fDefaultScale = fScaleY;
+			m_fDefaultScale = fScaleY + static_cast<float>(monitor.scaling.value() - 1.f);
 		}
 		else
 		{
-			m_fDefaultScale = fScaleX;
+			m_fDefaultScale = fScaleX + static_cast<float>(monitor.scaling.value() - 1.f);
 		}
 	}
 }
