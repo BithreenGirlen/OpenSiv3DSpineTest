@@ -50,7 +50,7 @@ if (NOT EXISTS "${SIV3D_SDK_DIR}")
 endif()
 
 # Spine ランタイム取得
-if (NOT EXISTS "${DIR_SPINE_CPP}")
+if (NOT EXISTS "${SPINE_RUNTIME_DIR}")
 	set (SPINE_RUNTIME_URL "https://github.com/EsotericSoftware/spine-runtimes/archive/refs/heads/${SPINE_VERSION}.zip")
 	set (SPINE_FOLDER_NAME "spine-runtimes-${SPINE_VERSION}")
 	download_and_extract("${SPINE_RUNTIME_URL}" "${SPINE_FOLDER_NAME}")
