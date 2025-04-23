@@ -115,6 +115,8 @@ void CS3dSpineDrawable::Draw()
 		spine::Color* pAttachmentColor = nullptr;
 
 		s3d::Texture *pTexture = nullptr;
+		bool hasPmaAttribute = false;
+
 		if (pAttachment->getRTTI().isExactly(spine::RegionAttachment::rtti))
 		{
 			spine::RegionAttachment* pRegionAttachment = static_cast<spine::RegionAttachment*>(pAttachment);
@@ -136,7 +138,10 @@ void CS3dSpineDrawable::Draw()
 			pIndices = &m_quadIndices;
 
 #ifdef SPINE_4_1_OR_LATER
-			pTexture = reinterpret_cast<s3d::Texture*>(static_cast<spine::AtlasRegion*>(pRegionAttachment->getRegion())->rendererObject);
+			spine::AtlasRegion* pAtlasRegion = static_cast<spine::AtlasRegion*>(pRegionAttachment->getRegion());
+			hasPmaAttribute = pAtlasRegion->page->pma;
+
+			pTexture = reinterpret_cast<s3d::Texture*>(pAtlasRegion->rendererObject);
 #else
 			pTexture = reinterpret_cast<s3d::Texture*>(static_cast<spine::AtlasRegion*>(pRegionAttachment->getRendererObject())->page->getRendererObject());
 #endif
@@ -157,7 +162,11 @@ void CS3dSpineDrawable::Draw()
 			pIndices = &pMeshAttachment->getTriangles();
 
 #ifdef SPINE_4_1_OR_LATER
-			pTexture = reinterpret_cast<s3d::Texture*>(static_cast<spine::AtlasRegion*>(pMeshAttachment->getRegion())->rendererObject);
+			spine::AtlasRegion* pAtlasRegion = static_cast<spine::AtlasRegion*>(pMeshAttachment->getRegion());
+			/* 実際にはこの属性の追加は4.0から */
+			hasPmaAttribute = pAtlasRegion->page->pma;
+
+			pTexture = reinterpret_cast<s3d::Texture*>(pAtlasRegion->rendererObject);
 #else
 			pTexture = reinterpret_cast<s3d::Texture*>(static_cast<spine::AtlasRegion*>(pMeshAttachment->getRendererObject())->page->getRendererObject());
 #endif
@@ -186,8 +195,6 @@ void CS3dSpineDrawable::Draw()
 			pAttachmentUvs = &m_skeletonClipping.getClippedUVs();
 			pIndices = &m_skeletonClipping.getClippedTriangles();
 		}
-
-		if (pTexture == nullptr)return;
 
 		const spine::Color& skeletonColor = skeleton->getColor();
 		const spine::Color& slotColor = slot.getColor();
@@ -222,15 +229,18 @@ void CS3dSpineDrawable::Draw()
 		m_buffer2d.indices.clear();
 		for (int ii = 0; ii < pIndices->size(); ii +=3)
 		{
-			s3d::TriangleIndex triangleindex{};
+			s3d::TriangleIndex triangleIndex{};
 
-			triangleindex.i0 = (*pIndices)[ii];
-			triangleindex.i1 = (*pIndices)[ii + 1LL];
-			triangleindex.i2 = (*pIndices)[ii + 2LL];
+			triangleIndex.i0 = (*pIndices)[ii];
+			triangleIndex.i1 = (*pIndices)[ii + 1LL];
+			triangleIndex.i2 = (*pIndices)[ii + 2LL];
 
-			m_buffer2d.indices.push_back(triangleindex);
+			m_buffer2d.indices.push_back(triangleIndex);
 		}
 
+#ifdef SPINE_4_1_OR_LATER
+		isAlphaPremultiplied = hasPmaAttribute;
+#endif
 		s3d::BlendState s3dBlendState;
 		spine::BlendMode spineBlendMode = isBlendModeNormalForced ? spine::BlendMode::BlendMode_Normal : slot.getData().getBlendMode();
 		switch (spineBlendMode)
@@ -250,7 +260,7 @@ void CS3dSpineDrawable::Draw()
 		}
 
 		s3d::ScopedRenderStates2D s3dScopedRenderState2D(s3dBlendState, s3d::SamplerState::ClampLinear);
-		m_buffer2d.draw(*pTexture);
+		pTexture != nullptr ? m_buffer2d.draw(*pTexture) : m_buffer2d.draw();
 
 		m_skeletonClipping.clipEnd(slot);
 	}
