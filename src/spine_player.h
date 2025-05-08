@@ -19,10 +19,11 @@ public:
 	CSpinePlayer();
 	virtual ~CSpinePlayer();
 
-	bool SetSpineFromFile(const std::vector<std::string>& atlasPaths, const std::vector<std::string>& skelPaths, bool bIsBinary);
-	bool SetSpineFromMemory(const std::vector<std::string>& atlasData, const std::vector<std::string>& atlasPaths, const std::vector<std::string>& skelData, bool bIsBinary);
+	bool LoadSpineFromFile(const std::vector<std::string>& atlasPaths, const std::vector<std::string>& skelPaths, bool bIsBinary);
+	bool LoadSpineFromMemory(const std::vector<std::string>& atlasData, const std::vector<std::string>& atlasPaths, const std::vector<std::string>& skelData, bool bIsBinary);
 
-	virtual void Redraw(float fDelta) = 0;
+	virtual void Update(float fDelta);
+	virtual void Redraw() = 0;
 
 	void RescaleSkeleton(bool bUpscale);
 	void RescaleCanvas(bool bUpscale);
@@ -89,7 +90,7 @@ protected:
 	virtual void WorkOutDefaultScale() = 0;
 
 	void UpdatePosition();
-	void UpdateScaletonScale();
+	void UpdateSkeletonScale();
 	void UpdateTimeScale();
 
 	void UpdateAnimation();

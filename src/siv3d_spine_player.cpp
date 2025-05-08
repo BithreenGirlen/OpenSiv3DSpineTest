@@ -12,21 +12,26 @@ CSiv3dSpinePlayer::~CSiv3dSpinePlayer()
 
 }
 
-void CSiv3dSpinePlayer::Redraw(float fDelta)
+void CSiv3dSpinePlayer::Redraw()
 {
 	if (!m_drawables.empty())
 	{
-		auto screenSize = s3d::Scene::Size();
-		float fX = (m_fBaseSize.x * m_fSkeletonScale - screenSize.x) / 2;
-		float fY = (m_fBaseSize.y * m_fSkeletonScale - screenSize.y) / 2;
-		const s3d::Mat3x2 matrix = s3d::Mat3x2::Scale(m_fSkeletonScale).translated(-fX, -fY);
+		auto sceneSize = s3d::Scene::Size();
+		/* 
+		 * 描画時の変換とは別に、転送時にsiv3d側で縮小されるので元に戻す。
+		 * https://siv3d.github.io/ja-jp/tutorial3/scene/#448-%E3%82%B7%E3%83%BC%E3%83%B3%E6%8B%A1%E5%A4%A7%E7%B8%AE%E5%B0%8F%E3%83%95%E3%82%A3%E3%83%AB%E3%82%BF
+		 */
+		float fScale = m_fSkeletonScale / m_fDefaultScale;
+
+		float fX = (m_fBaseSize.x * fScale - sceneSize.x) / 2;
+		float fY = (m_fBaseSize.y * fScale - sceneSize.y) / 2;
+		const s3d::Mat3x2 matrix = s3d::Mat3x2::Scale(fScale).translated(-fX, -fY);
 		const s3d::Transformer2D t(matrix);
 
 		if (!m_bDrawOrderReversed)
 		{
 			for (size_t i = 0; i < m_drawables.size(); ++i)
 			{
-				m_drawables[i]->Update(fDelta);
 				m_drawables[i]->Draw();
 			}
 		}
@@ -34,7 +39,6 @@ void CSiv3dSpinePlayer::Redraw(float fDelta)
 		{
 			for (long long i = m_drawables.size() - 1; i >= 0; --i)
 			{
-				m_drawables[i]->Update(fDelta);
 				m_drawables[i]->Draw();
 			}
 		}
@@ -46,7 +50,7 @@ void CSiv3dSpinePlayer::WorkOutDefaultScale()
 	m_fDefaultScale = 1.f;
 	m_fDefaultOffset = s3d::Vector2D<float>();
 
-	/* デスクトップ寸法・描画可能領域に合わせて拡縮調整 */
+	/* 描画可能領域に合わせて拡縮調整 */
 
 	int iSkeletonWidth = static_cast<int>(m_fBaseSize.x);
 	int iSkeletonHeight = static_cast<int>(m_fBaseSize.y);
@@ -61,11 +65,11 @@ void CSiv3dSpinePlayer::WorkOutDefaultScale()
 
 		if (fScaleX > fScaleY)
 		{
-			m_fDefaultScale = fScaleY + static_cast<float>(monitor.scaling.value() - 1.f);
+			m_fDefaultScale = fScaleY;
 		}
 		else
 		{
-			m_fDefaultScale = fScaleX + static_cast<float>(monitor.scaling.value() - 1.f);
+			m_fDefaultScale = fScaleX;
 		}
 	}
 }

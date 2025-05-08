@@ -13,7 +13,7 @@ CSpinePlayer::~CSpinePlayer()
 }
 
 /*ファイル取り込み*/
-bool CSpinePlayer::SetSpineFromFile(const std::vector<std::string>& atlasPaths, const std::vector<std::string>& skelPaths, bool bIsBinary)
+bool CSpinePlayer::LoadSpineFromFile(const std::vector<std::string>& atlasPaths, const std::vector<std::string>& skelPaths, bool bIsBinary)
 {
 	if (atlasPaths.size() != skelPaths.size())return false;
 	ClearDrawables();
@@ -43,7 +43,7 @@ bool CSpinePlayer::SetSpineFromFile(const std::vector<std::string>& atlasPaths, 
 	return SetupDrawer();
 }
 /*メモリ取り込み*/
-bool CSpinePlayer::SetSpineFromMemory(const std::vector<std::string>& atlasData, const std::vector<std::string>& atlasPaths, const std::vector<std::string>& skelData, bool bIsBinary)
+bool CSpinePlayer::LoadSpineFromMemory(const std::vector<std::string>& atlasData, const std::vector<std::string>& atlasPaths, const std::vector<std::string>& skelData, bool bIsBinary)
 {
 	if (atlasData.size() != skelData.size() || atlasData.size() != atlasPaths.size())return false;
 	ClearDrawables();
@@ -73,6 +73,14 @@ bool CSpinePlayer::SetSpineFromMemory(const std::vector<std::string>& atlasData,
 
 	return SetupDrawer();
 }
+/*状態更新*/
+void CSpinePlayer::Update(float fDelta)
+{
+	for (const auto& drawable : m_drawables)
+	{
+		drawable->Update(fDelta);
+	}
+}
 /*拡縮変更*/
 void CSpinePlayer::RescaleSkeleton(bool bUpscale)
 {
@@ -85,7 +93,6 @@ void CSpinePlayer::RescaleSkeleton(bool bUpscale)
 		m_fSkeletonScale -= kfScalePortion;
 		if (m_fSkeletonScale < kfMinScale)m_fSkeletonScale = kfMinScale;
 	}
-	UpdateScaletonScale();
 }
 
 void CSpinePlayer::RescaleCanvas(bool bUpscale)
@@ -127,7 +134,7 @@ void CSpinePlayer::ResetScale()
 	m_fOffset = m_fDefaultOffset;
 	m_fViewOffset = FPoint2{};
 
-	UpdateScaletonScale();
+	UpdateSkeletonScale();
 	UpdateTimeScale();
 	UpdatePosition();
 }
@@ -454,7 +461,7 @@ void CSpinePlayer::UpdatePosition()
 	}
 }
 /*尺度適用*/
-void CSpinePlayer::UpdateScaletonScale()
+void CSpinePlayer::UpdateSkeletonScale()
 {
 	for (const auto& pDrawable : m_drawables)
 	{

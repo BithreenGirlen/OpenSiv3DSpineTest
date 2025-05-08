@@ -3,9 +3,6 @@
 
 #include "siv3d_spine_player.h"
 
-/* ウィンドウサイズ変更時の追従がうまくいかないので一先ず保留。 */
-// #define RESIZE_ACUTUAL_TEST
-
 
 CSiv3dMainWindow::CSiv3dMainWindow(const char32_t* windowName)
 {
@@ -13,9 +10,8 @@ CSiv3dMainWindow::CSiv3dMainWindow(const char32_t* windowName)
 	{
 		s3d::Window::SetTitle(windowName);
 		s3d::Window::SetStyle(s3d::WindowStyle::Sizable);
-#ifdef RESIZE_ACUTUAL_TEST
+
 		s3d::Scene::SetResizeMode(s3d::ResizeMode::Actual);
-#endif
 	}
 }
 
@@ -52,7 +48,7 @@ void CSiv3dMainWindow::Display()
 	skelPaths.push_back(s3d::Unicode::ToUTF8(selectedSkeleton.value()));
 
 	CSiv3dSpinePlayer sS3dSpinePlayer;
-	sS3dSpinePlayer.SetSpineFromFile(atlasPaths, skelPaths, isBinarySkel);
+	sS3dSpinePlayer.LoadSpineFromFile(atlasPaths, skelPaths, isBinarySkel);
 	
 	const auto ResizeWindow = [&]()
 		-> void
@@ -71,30 +67,30 @@ void CSiv3dMainWindow::Display()
 			* Virtual: デスクトップ解像度 / DPI
 			*/
 
-#ifdef RESIZE_ACUTUAL_TEST
 			s3d::Window::ResizeActual(iClientWidth, iClientHeight, s3d::YesNo<s3d::Centering_tag>::No);
-#else
-			s3d::Window::Resize(iClientWidth, iClientHeight, s3d::YesNo<s3d::Centering_tag>::No);
-#endif
 		};
 
 	ResizeWindow();
 
-	s3d::Point mouseStartPos{};
 	while (s3d::System::Update())
 	{
-		if (s3d::MouseL.down())
+		if (s3d::MouseL.pressed())
 		{
-			mouseStartPos = s3d::Cursor::Pos();
-		}
-		else if (s3d::MouseL.pressed())
-		{
-			/* 位置移動 */
-			s3d::Point mouseCurrentPos = s3d::Cursor::Pos();
-			s3d::Point dif = mouseStartPos - mouseCurrentPos;
+			if (s3d::KeyLControl.pressed() && s3d::Window::GetStyle() == s3d::WindowStyle::Frameless)
+			{
+				/* 枠無しウィンドウ移動 */
+				s3d::Point mouseDelta = s3d::Cursor::ScreenDelta();
+				s3d::Rect windowRect = s3d::Window::GetState().bounds;
 
-			sS3dSpinePlayer.MoveViewPoint(dif.x, dif.y);
-			mouseStartPos = mouseCurrentPos;
+				s3d::Point windowPosToBe = s3d::Point{ windowRect.x + mouseDelta.x, windowRect.y + mouseDelta.y };
+				s3d::Window::SetPos(windowPosToBe);
+			}
+			else
+			{
+				/* 視点移動 */
+				s3d::Point mouseDelta = s3d::Cursor::Delta();
+				sS3dSpinePlayer.MoveViewPoint(-mouseDelta.x, -mouseDelta.y);
+			}
 		}
 		else if (s3d::MouseL.up() && s3d::MouseR.pressed())
 		{
@@ -103,11 +99,31 @@ void CSiv3dMainWindow::Display()
 		}
 		else if (s3d::MouseM.up())
 		{
-			/* 位置・速度・尺度初期化 */
-			sS3dSpinePlayer.ResetScale();
-#ifdef RESIZE_ACUTUAL_TEST
-			ResizeWindow();
-#endif
+			if (s3d::MouseR.pressed())
+			{
+				/* 枠表示・消去 */
+				bool hasFrame = s3d::Window::GetStyle() != s3d::WindowStyle::Frameless;
+				if (!hasFrame)
+				{
+					s3d::Rect windowRect = s3d::Window::GetState().bounds;
+					windowRect.y = s3d::Max(0, windowRect.y);
+
+					s3d::Window::SetPos({ windowRect.x, windowRect.y });
+				}
+				else
+				{
+					s3d::Window::SetPos({});
+				}
+
+				s3d::Window::SetStyle(hasFrame ? s3d::WindowStyle::Frameless : s3d::WindowStyle::Sizable);
+			}
+			else
+			{
+				/* 視点・速度・尺度初期化 */
+				sS3dSpinePlayer.ResetScale();
+				ResizeWindow();
+			}
+
 		}
 
 		if (s3d::Mouse::Wheel())
@@ -121,16 +137,16 @@ void CSiv3dMainWindow::Display()
 			{
 				/* 拡縮 */
 				sS3dSpinePlayer.RescaleSkeleton(s3d::Mouse::Wheel() > 0);
-#ifdef RESIZE_ACUTUAL_TEST
-				if (s3d::KeyLControl.pressed())
+				if (!s3d::KeyLControl.pressed())
 				{
 					sS3dSpinePlayer.RescaleCanvas(s3d::Mouse::Wheel() > 0);
 					ResizeWindow();
 				}
-#endif
 			}
 		}
 
-		sS3dSpinePlayer.Redraw(static_cast<float>(s3d::Scene::DeltaTime()));
+		sS3dSpinePlayer.Update(static_cast<float>(s3d::Scene::DeltaTime()));
+
+		sS3dSpinePlayer.Redraw();
 	}
 }

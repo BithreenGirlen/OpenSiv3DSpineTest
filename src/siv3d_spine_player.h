@@ -9,7 +9,8 @@ public:
 	CSiv3dSpinePlayer();
 	virtual ~CSiv3dSpinePlayer();
 
-	virtual void Redraw(float fDelta);
+	virtual void Redraw();
+
 private:
 	virtual void WorkOutDefaultScale();
 };
