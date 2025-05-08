@@ -11,7 +11,7 @@ namespace spine
 	}
 }
 
-/* 混成法: 乗算済み加算 */
+/* 混色法: 乗算済み加算 */
 static s3d::BlendState g_s3dBlendStateAddPma = s3d::BlendState
 (
 	true,
@@ -22,15 +22,26 @@ static s3d::BlendState g_s3dBlendStateAddPma = s3d::BlendState
 	s3d::Blend::One,
 	s3d::BlendOp::Add
 );
-/* 混成法: 反転乗算 */
+/* 混色法: 乗算; 事前定義のs3d::BlendState::MultiplicativeはSpineの定義とは別物。*/
+static s3d::BlendState g_s3dBlendMultiply = s3d::BlendState
+(
+	true,
+	s3d::Blend::DestColor,
+	s3d::Blend::InvSrcAlpha,
+	s3d::BlendOp::Add,
+	s3d::Blend::Zero,
+	s3d::Blend::One,
+	s3d::BlendOp::Add
+);
+/* 混色法: 反転乗算 */
 static s3d::BlendState g_s3dBlendStateScreen = s3d::BlendState
 (
 	true,
 	s3d::Blend::One,
-	s3d::Blend::InvSrcAlpha,
+	s3d::Blend::InvSrcColor,
 	s3d::BlendOp::Add,
-	s3d::Blend::InvSrcAlpha,
-	s3d::Blend::InvSrcAlpha,
+	s3d::Blend::InvSrcColor,
+	s3d::Blend::InvSrcColor,
 	s3d::BlendOp::Add
 );
 
@@ -249,7 +260,7 @@ void CS3dSpineDrawable::Draw()
 			s3dBlendState = isAlphaPremultiplied ? g_s3dBlendStateAddPma : s3d::BlendState::Additive;
 			break;
 		case spine::BlendMode_Multiply:
-			s3dBlendState = s3d::BlendState::Multiplicative;
+			s3dBlendState = g_s3dBlendMultiply;
 			break;
 		case spine::BlendMode_Screen:
 			s3dBlendState = g_s3dBlendStateScreen;
