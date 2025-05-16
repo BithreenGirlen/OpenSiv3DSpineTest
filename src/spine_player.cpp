@@ -130,11 +130,8 @@ void CSpinePlayer::ResetScale()
 
 	m_fSkeletonScale = m_fDefaultScale;
 	m_fCanvasScale = m_fDefaultScale;
-
 	m_fOffset = m_fDefaultOffset;
-	m_fViewOffset = FPoint2{};
 
-	UpdateSkeletonScale();
 	UpdateTimeScale();
 	UpdatePosition();
 }
@@ -457,7 +454,7 @@ void CSpinePlayer::UpdatePosition()
 {
 	for (const auto& pDrawable : m_drawables)
 	{
-		pDrawable->skeleton->setPosition(m_fBaseSize.x / 2 - m_fOffset.x - m_fViewOffset.x, m_fBaseSize.y / 2 - m_fOffset.y - m_fViewOffset.y);
+		pDrawable->skeleton->setPosition(m_fBaseSize.x / 2 - m_fOffset.x, m_fBaseSize.y / 2 - m_fOffset.y);
 	}
 }
 /*尺度適用*/

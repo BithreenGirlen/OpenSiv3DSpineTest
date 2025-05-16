@@ -73,7 +73,6 @@ protected:
 	float m_fSkeletonScale = 1.f;
 	float m_fCanvasScale = 1.f;
 	FPoint2 m_fOffset{};
-	FPoint2 m_fViewOffset{};
 
 	bool m_bDrawOrderReversed = false;
 
