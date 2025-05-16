@@ -4,7 +4,7 @@
 
 ### 実行例
 
-https://github.com/user-attachments/assets/8ede0246-0f80-4c34-8801-c4d56018299e
+https://github.com/user-attachments/assets/cd06e923-3438-4ba5-8eb0-44322e3ef4bd
 
 ## ファイル構成
 `src`階層下にコードを置いてあります。
@@ -33,3 +33,8 @@ Spine v4.1で動作確認を行ってますが、v3.8でも問題なく動くか
 - もっと古い版で動かしたい場合、`spine-cpp`ではなく`spine-c`を使うことになりますので[別ライブラリの作り](https://github.com/BithreenGirlen/DxLibSpineViewer/blob/main/DxLibSpineC)を参考にしてください。
 - より新しい版で動かしたい場合、本プロジェクトファイルではマクロによる分岐を行ってますが、
 v4.0->v4.1->v4.2の変遷に於ける汎用ランタイムの破壊的変更は多いので、版毎に`siv3d_spine.cpp/h`を作成した方が無難かもしれません。
+
+### 混色法に関して
+
+定義済みの各種`s3d::BlendState`は基本的に`dstA = dstA`の計算式になっていて、透明度を表現することができません。  
+そのため、Spineに関わる混色法は全て[siv3d_spine.cpp](https://github.com/BithreenGirlen/OpenSiv3DSpineTest/blob/main/src/siv3d_spine.cpp)にてユーザ定義を行っています。
