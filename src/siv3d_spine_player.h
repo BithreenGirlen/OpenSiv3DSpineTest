@@ -11,8 +11,11 @@ public:
 
 	virtual void Redraw();
 
+	void OnResize(const s3d::Size& size) { m_sceneSize = size; }
 private:
 	virtual void WorkOutDefaultScale();
+
+	s3d::Size m_sceneSize;
 };
 
 #endif // !SIV3D_SPINE_PLAYER_H_

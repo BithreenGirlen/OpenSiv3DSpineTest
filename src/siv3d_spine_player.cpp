@@ -16,15 +16,14 @@ void CSiv3dSpinePlayer::Redraw()
 {
 	if (!m_drawables.empty())
 	{
-		auto sceneSize = s3d::Scene::Size();
 		/* 
 		 * 描画時の変換とは別に、転送時にsiv3d側で縮小されるので元に戻す。
 		 * https://siv3d.github.io/ja-jp/tutorial3/scene/#448-%E3%82%B7%E3%83%BC%E3%83%B3%E6%8B%A1%E5%A4%A7%E7%B8%AE%E5%B0%8F%E3%83%95%E3%82%A3%E3%83%AB%E3%82%BF
 		 */
 		float fScale = m_fSkeletonScale / m_fDefaultScale;
 
-		float fX = (m_fBaseSize.x * fScale - sceneSize.x) / 2;
-		float fY = (m_fBaseSize.y * fScale - sceneSize.y) / 2;
+		float fX = (m_fBaseSize.x * fScale - m_sceneSize.x) / 2;
+		float fY = (m_fBaseSize.y * fScale - m_sceneSize.y) / 2;
 		const s3d::Mat3x2 matrix = s3d::Mat3x2::Scale(fScale).translated(-fX, -fY);
 		const s3d::Transformer2D t(matrix);
 

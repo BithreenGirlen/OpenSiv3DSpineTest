@@ -156,6 +156,7 @@
     <ClCompile Include="..\src\siv3d_spine_player.cpp" />
     <ClCompile Include="..\src\siv3d_spine.cpp" />
     <ClCompile Include="..\src\siv3d_main_window.cpp" />
+    <ClCompile Include="..\src\siv3d_window_menu.cpp" />
     <ClCompile Include="..\src\spine_loader.cpp" />
     <ClCompile Include="..\src\spine_player.cpp" />
     <ClCompile Include="deps\spine-cpp-4.1\src\spine\Animation.cpp" />
@@ -232,6 +233,7 @@
     <ClInclude Include="..\src\siv3d_spine_player.h" />
     <ClInclude Include="..\src\siv3d_spine.h" />
     <ClInclude Include="..\src\siv3d_main_window.h" />
+    <ClInclude Include="..\src\siv3d_window_menu.h" />
     <ClInclude Include="..\src\spine_loader.h" />
     <ClInclude Include="..\src\spine_player.h" />
     <ClInclude Include="pch.h" />
