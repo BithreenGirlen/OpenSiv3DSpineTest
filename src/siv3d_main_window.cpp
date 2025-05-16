@@ -108,7 +108,7 @@ void CSiv3dMainWindow::Display()
 
 		if (m_pSpinePlayerTexture.get() != nullptr)
 		{
-			m_pSpinePlayerTexture->clear(s3d::Palette::Black);
+			m_pSpinePlayerTexture->clear(s3d::ColorF(0.f, 0.f));
 			{
 				const s3d::ScopedRenderTarget2D spinePlayerRenderTarget(*m_pSpinePlayerTexture.get());
 				m_siv3dSpinePlayer.Redraw();

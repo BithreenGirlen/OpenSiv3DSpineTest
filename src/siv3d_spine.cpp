@@ -11,6 +11,39 @@ namespace spine
 	}
 }
 
+/* 混色法: 通常 */
+static s3d::BlendState g_s3dBlendStateNormal = s3d::BlendState
+(
+	true,
+	s3d::Blend::SrcAlpha,
+	s3d::Blend::InvSrcAlpha,
+	s3d::BlendOp::Add,
+	s3d::Blend::One,
+	s3d::Blend::InvSrcAlpha,
+	s3d::BlendOp::Add
+);
+/* 混色法: 乗算済み通常 */
+static s3d::BlendState g_s3dBlendStateNormalPma = s3d::BlendState
+(
+	true,
+	s3d::Blend::One,
+	s3d::Blend::InvSrcAlpha,
+	s3d::BlendOp::Add,
+	s3d::Blend::One,
+	s3d::Blend::InvSrcAlpha,
+	s3d::BlendOp::Add
+);
+/* 混色法: 加算 */
+static s3d::BlendState g_s3dBlendStateAdd = s3d::BlendState
+(
+	true,
+	s3d::Blend::SrcAlpha,
+	s3d::Blend::One,
+	s3d::BlendOp::Add,
+	s3d::Blend::One,
+	s3d::Blend::One,
+	s3d::BlendOp::Add
+);
 /* 混色法: 乗算済み加算 */
 static s3d::BlendState g_s3dBlendStateAddPma = s3d::BlendState
 (
@@ -22,7 +55,7 @@ static s3d::BlendState g_s3dBlendStateAddPma = s3d::BlendState
 	s3d::Blend::One,
 	s3d::BlendOp::Add
 );
-/* 混色法: 乗算; 事前定義のs3d::BlendState::MultiplicativeはSpineの定義とは別物。*/
+/* 混色法: 乗算 */
 static s3d::BlendState g_s3dBlendMultiply = s3d::BlendState
 (
 	true,
@@ -257,7 +290,7 @@ void CS3dSpineDrawable::Draw()
 		switch (spineBlendMode)
 		{
 		case spine::BlendMode_Additive:
-			s3dBlendState = isAlphaPremultiplied ? g_s3dBlendStateAddPma : s3d::BlendState::Additive;
+			s3dBlendState = isAlphaPremultiplied ? g_s3dBlendStateAddPma : g_s3dBlendStateAdd;
 			break;
 		case spine::BlendMode_Multiply:
 			s3dBlendState = g_s3dBlendMultiply;
@@ -266,7 +299,7 @@ void CS3dSpineDrawable::Draw()
 			s3dBlendState = g_s3dBlendStateScreen;
 			break;
 		default:
-			s3dBlendState = isAlphaPremultiplied ? s3d::BlendState::Premultiplied : s3d::BlendState::NonPremultiplied;
+			s3dBlendState = isAlphaPremultiplied ? g_s3dBlendStateNormalPma : g_s3dBlendStateNormal;
 			break;
 		}
 
