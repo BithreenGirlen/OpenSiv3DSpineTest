@@ -230,6 +230,7 @@
     <ResourceCompile Include="App\Resource.rc" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\src\siv3d_spine_blendmode.h" />
     <ClInclude Include="..\src\siv3d_spine_player.h" />
     <ClInclude Include="..\src\siv3d_spine.h" />
     <ClInclude Include="..\src\siv3d_main_window.h" />

@@ -1,6 +1,7 @@
 ﻿
 
 #include "siv3d_spine.h"
+#include "siv3d_spine_blendmode.h"
 
 namespace spine
 {
@@ -10,73 +11,6 @@ namespace spine
 		return &s_defaultSpineExtension;
 	}
 }
-
-/* 混色法: 通常 */
-static s3d::BlendState g_s3dBlendStateNormal = s3d::BlendState
-(
-	true,
-	s3d::Blend::SrcAlpha,
-	s3d::Blend::InvSrcAlpha,
-	s3d::BlendOp::Add,
-	s3d::Blend::One,
-	s3d::Blend::InvSrcAlpha,
-	s3d::BlendOp::Add
-);
-/* 混色法: 乗算済み通常 */
-static s3d::BlendState g_s3dBlendStateNormalPma = s3d::BlendState
-(
-	true,
-	s3d::Blend::One,
-	s3d::Blend::InvSrcAlpha,
-	s3d::BlendOp::Add,
-	s3d::Blend::One,
-	s3d::Blend::InvSrcAlpha,
-	s3d::BlendOp::Add
-);
-/* 混色法: 加算 */
-static s3d::BlendState g_s3dBlendStateAdd = s3d::BlendState
-(
-	true,
-	s3d::Blend::SrcAlpha,
-	s3d::Blend::One,
-	s3d::BlendOp::Add,
-	s3d::Blend::One,
-	s3d::Blend::One,
-	s3d::BlendOp::Add
-);
-/* 混色法: 乗算済み加算 */
-static s3d::BlendState g_s3dBlendStateAddPma = s3d::BlendState
-(
-	true,
-	s3d::Blend::One,
-	s3d::Blend::One,
-	s3d::BlendOp::Add,
-	s3d::Blend::One,
-	s3d::Blend::One,
-	s3d::BlendOp::Add
-);
-/* 混色法: 乗算 */
-static s3d::BlendState g_s3dBlendStateMultiply = s3d::BlendState
-(
-	true,
-	s3d::Blend::DestColor,
-	s3d::Blend::InvSrcAlpha,
-	s3d::BlendOp::Add,
-	s3d::Blend::InvSrcAlpha,
-	s3d::Blend::InvSrcAlpha,
-	s3d::BlendOp::Add
-);
-/* 混色法: 反転乗算 */
-static s3d::BlendState g_s3dBlendStateScreen = s3d::BlendState
-(
-	true,
-	s3d::Blend::One,
-	s3d::Blend::InvSrcColor,
-	s3d::BlendOp::Add,
-	s3d::Blend::InvSrcColor,
-	s3d::Blend::InvSrcColor,
-	s3d::BlendOp::Add
-);
 
 CS3dSpineDrawable::CS3dSpineDrawable(spine::SkeletonData* pSkeletonData, spine::AnimationStateData* pAnimationStateData)
 {
@@ -290,16 +224,16 @@ void CS3dSpineDrawable::Draw()
 		switch (spineBlendMode)
 		{
 		case spine::BlendMode_Additive:
-			s3dBlendState = isAlphaPremultiplied ? g_s3dBlendStateAddPma : g_s3dBlendStateAdd;
+			s3dBlendState = isAlphaPremultiplied ? Siv3dSpineBlendMode::AddPma : Siv3dSpineBlendMode::Add;
 			break;
 		case spine::BlendMode_Multiply:
-			s3dBlendState = g_s3dBlendStateMultiply;
+			s3dBlendState = Siv3dSpineBlendMode::Multiply;
 			break;
 		case spine::BlendMode_Screen:
-			s3dBlendState = g_s3dBlendStateScreen;
+			s3dBlendState = Siv3dSpineBlendMode::Screen;
 			break;
 		default:
-			s3dBlendState = isAlphaPremultiplied ? g_s3dBlendStateNormalPma : g_s3dBlendStateNormal;
+			s3dBlendState = isAlphaPremultiplied ? Siv3dSpineBlendMode::NormalPma : Siv3dSpineBlendMode::Normal;
 			break;
 		}
 

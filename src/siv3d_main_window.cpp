@@ -1,6 +1,8 @@
 ﻿
 #include "siv3d_main_window.h"
 
+#include "siv3d_spine_blendmode.h"
+
 
 CSiv3dMainWindow::CSiv3dMainWindow(const char32_t* windowName)
 {
@@ -123,18 +125,7 @@ void CSiv3dMainWindow::Display()
 			m_pSpineTrackTexture->clear(s3d::ColorF(0.f, 0.f));
 			{
 				const s3d::ScopedRenderTarget2D spinePlayerRenderTarget(*m_pSpineTrackTexture.get());
-
-				constexpr s3d::BlendState s3dBlendStateNormal = s3d::BlendState
-				(
-					true,
-					s3d::Blend::SrcAlpha,
-					s3d::Blend::InvSrcAlpha,
-					s3d::BlendOp::Add,
-					s3d::Blend::One,
-					s3d::Blend::InvSrcAlpha,
-					s3d::BlendOp::Add
-				);
-				s3d::ScopedRenderStates2D s3dScopedRenderState2D(s3dBlendStateNormal, s3d::SamplerState::ClampLinear);
+				const s3d::ScopedRenderStates2D s3dScopedRenderState2D(Siv3dSpineBlendMode::Normal, s3d::SamplerState::ClampLinear);
 
 				/* 毎ループ実行すまじき処理だが、取り敢えず試験用で。 */
 				s3d::String animationName = s3d::Unicode::FromUTF8(m_siv3dSpinePlayer.GetCurrentAnimationName());
