@@ -7,10 +7,10 @@ CSiv3dMainWindow::CSiv3dMainWindow(const char32_t* windowName)
 	if (windowName != nullptr)
 	{
 		s3d::Window::SetTitle(windowName);
-		s3d::Window::SetStyle(s3d::WindowStyle::Sizable);
-
-		s3d::Scene::SetResizeMode(s3d::ResizeMode::Actual);
 	}
+
+	s3d::Window::SetStyle(s3d::WindowStyle::Sizable);
+	s3d::Scene::SetResizeMode(s3d::ResizeMode::Actual);
 
 	InitialiseMenuBar();
 }
@@ -22,6 +22,9 @@ CSiv3dMainWindow::~CSiv3dMainWindow()
 
 void CSiv3dMainWindow::Display()
 {
+	constexpr s3d::int32 kTrackFontSize = 20;
+	const s3d::Font trackFont{ kTrackFontSize };
+
 	while (s3d::System::Update())
 	{
 		m_siv3dWindowMenu.Update();
@@ -54,20 +57,17 @@ void CSiv3dMainWindow::Display()
 			if (s3d::MouseR.pressed())
 			{
 				/* 枠表示・消去 */
-				bool hasFrame = s3d::Window::GetStyle() != s3d::WindowStyle::Frameless;
-				if (!hasFrame)
+				if (s3d::Window::GetStyle() != s3d::WindowStyle::Frameless)
 				{
 					s3d::Rect windowRect = s3d::Window::GetState().bounds;
-					windowRect.y = s3d::Max(0, windowRect.y);
-
-					s3d::Window::SetPos({ windowRect.x, windowRect.y });
+					s3d::Window::SetPos({ windowRect.x, s3d::Max(0, windowRect.y) });
+					s3d::Window::SetStyle(s3d::WindowStyle::Frameless);
 				}
 				else
 				{
 					s3d::Window::SetPos({});
+					s3d::Window::SetStyle(s3d::WindowStyle::Sizable);
 				}
-
-				s3d::Window::SetStyle(hasFrame ? s3d::WindowStyle::Frameless : s3d::WindowStyle::Sizable);
 			}
 			else
 			{
@@ -106,6 +106,7 @@ void CSiv3dMainWindow::Display()
 
 		m_siv3dSpinePlayer.Update(static_cast<float>(s3d::Scene::DeltaTime()));
 
+		s3d::int32 menuBarHeight = m_siv3dWindowMenu.IsVisible() ? s3d::SimpleMenuBar::MenuBarHeight : 0;
 		if (m_pSpinePlayerTexture.get() != nullptr)
 		{
 			m_pSpinePlayerTexture->clear(s3d::ColorF(0.f, 0.f));
@@ -114,9 +115,47 @@ void CSiv3dMainWindow::Display()
 				m_siv3dSpinePlayer.Redraw();
 			}
 
-			s3d::int32 menuBarHeight = m_siv3dWindowMenu.IsVisible() ? s3d::SimpleMenuBar::MenuBarHeight : 0;
 			m_pSpinePlayerTexture->draw(0, menuBarHeight);
 		}
+
+		if (m_pSpineTrackTexture.get() != nullptr && !isTrackHidden)
+		{
+			m_pSpineTrackTexture->clear(s3d::ColorF(0.f, 0.f));
+			{
+				const s3d::ScopedRenderTarget2D spinePlayerRenderTarget(*m_pSpineTrackTexture.get());
+
+				constexpr s3d::BlendState s3dBlendStateNormal = s3d::BlendState
+				(
+					true,
+					s3d::Blend::SrcAlpha,
+					s3d::Blend::InvSrcAlpha,
+					s3d::BlendOp::Add,
+					s3d::Blend::One,
+					s3d::Blend::InvSrcAlpha,
+					s3d::BlendOp::Add
+				);
+				s3d::ScopedRenderStates2D s3dScopedRenderState2D(s3dBlendStateNormal, s3d::SamplerState::ClampLinear);
+
+				/* 毎ループ実行すまじき処理だが、取り敢えず試験用で。 */
+				s3d::String animationName = s3d::Unicode::FromUTF8(m_siv3dSpinePlayer.GetCurrentAnimationName());
+				s3d::Vector4D<float> animationWatch{};
+				m_siv3dSpinePlayer.GetCurrentAnimationTime(&animationWatch.x, &animationWatch.y, &animationWatch.z, &animationWatch.w);
+				
+				{
+					using namespace s3d;
+					const auto& formatted =	U"Track: {:.2f}\nLast: {:.2f}"_fmt(animationWatch.x, animationWatch.y);
+					trackFont(formatted).draw(s3d::Vec2{ 0, 0 }, s3d::ColorF{ 1.f });
+				}
+
+				double trackValue = animationWatch.y;
+				double trackMin = animationWatch.z;
+				double trackMax = animationWatch.w;
+				s3d::SimpleGUI::Slider(animationName, trackValue, trackMin, trackMax, s3d::Vec2{ 0, kTrackFontSize * 3.2}, animationName.size() * 12.0);
+			}
+
+			m_pSpineTrackTexture->draw(0, menuBarHeight);
+		}
+
 		m_siv3dWindowMenu.Draw();
 	}
 }
@@ -148,9 +187,11 @@ void CSiv3dMainWindow::MenuOnOpenFile()
 	atlasPaths.push_back(s3d::Unicode::ToUTF8(selectedAtlas.value()));
 	skelPaths.push_back(s3d::Unicode::ToUTF8(selectedSkeleton.value()));
 
-	m_siv3dSpinePlayer.LoadSpineFromFile(atlasPaths, skelPaths, isBinarySkel);
-
-	ResizeWindow();
+	bool hasBeenLoaded = m_siv3dSpinePlayer.LoadSpineFromFile(atlasPaths, skelPaths, isBinarySkel);
+	if (hasBeenLoaded)
+	{
+		ResizeWindow();
+	}
 }
 
 void CSiv3dMainWindow::MenuOnSnapImage()
@@ -159,11 +200,18 @@ void CSiv3dMainWindow::MenuOnSnapImage()
 	{
 		s3d::Image image;
 		m_pSpinePlayerTexture->readAsImage(image);
-		s3d::String fileName = s3d::Unicode::FromUTF8(m_siv3dSpinePlayer.GetCurrentAnimationNameWithTrackTime());
+		s3d::String fileName = s3d::Unicode::FromUTF8(m_siv3dSpinePlayer.GetCurrentAnimationName());
 
 		s3d::FilePath filePath = s3d::FileSystem::ParentPath(s3d::FileSystem::ModulePath()) + fileName + U".webp";
 		image.saveWebP(filePath);
 	}
+}
+
+void CSiv3dMainWindow::MenuOnHideTrack()
+{
+	bool checked = m_siv3dWindowMenu.GetLastItemChecked();
+	m_siv3dWindowMenu.SetLastItemChecked(!checked);
+	isTrackHidden = !checked;
 }
 
 void CSiv3dMainWindow::ResizeWindow()
@@ -186,9 +234,14 @@ void CSiv3dMainWindow::ResizeWindow()
 	s3d::int32 menuBarHeight = m_siv3dWindowMenu.IsVisible() ? s3d::SimpleMenuBar::MenuBarHeight : 0;
 	s3d::Window::ResizeActual(iClientWidth, iClientHeight + menuBarHeight, s3d::YesNo<s3d::Centering_tag>::No);
 	
+	/* Spine描画先 */
 	s3d::Size spinePlayerSize = s3d::Size(iClientWidth, iClientHeight);
 	m_pSpinePlayerTexture = std::make_unique<s3d::RenderTexture>(spinePlayerSize);
 	m_siv3dSpinePlayer.OnResize(spinePlayerSize);
+
+	/* Spine情報表示先 */
+	s3d::Size spineTrackSize = s3d::Size(iClientWidth * 3 / 10, iClientHeight * 3 / 10);
+	m_pSpineTrackTexture = std::make_unique<s3d::RenderTexture>(spineTrackSize);
 }
 
 void CSiv3dMainWindow::InitialiseMenuBar()
@@ -210,17 +263,25 @@ void CSiv3dMainWindow::InitialiseMenuBar()
 		};
 		const s3d::Array<std::function<void()>> imageMenuCallbacks
 		{
-			std::bind(&CSiv3dMainWindow::MenuOnSnapImage, this)
+			std::bind(&CSiv3dMainWindow::MenuOnSnapImage, this),
+		};
+
+		const std::pair<s3d::String, s3d::Array<s3d::String>> windowMenu
+		{
+			U"Window", { U"Hide track"}
+		};
+		const s3d::Array<std::function<void()>> windowMenuCallbacks
+		{
+			std::bind(&CSiv3dMainWindow::MenuOnHideTrack, this)
 		};
 
 		const s3d::Array<std::pair<s3d::String, s3d::Array<s3d::String>>> menuItems
 		{
-			fileMenu, imageMenu
+			fileMenu, imageMenu, windowMenu
 		};
-
 		const s3d::Array<s3d::Array<std::function<void()>>> menuCallbacks
 		{
-			fileMenuCallbacks, imageMenuCallbacks
+			fileMenuCallbacks, imageMenuCallbacks, windowMenuCallbacks
 		};
 
 		m_siv3dWindowMenu.Initialise(menuItems, menuCallbacks);

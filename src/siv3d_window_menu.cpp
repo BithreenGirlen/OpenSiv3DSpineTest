@@ -43,6 +43,7 @@ void CSiv3dWindowMenu::Update()
 					{
 						if (m_menuCallbacks[menuIndex][itemIndex] != nullptr)
 						{
+							m_lastItemIndex = menuBarItem.value();
 							m_menuCallbacks[menuIndex][itemIndex]();
 						}
 					}
@@ -57,5 +58,22 @@ void CSiv3dWindowMenu::Draw()
 	if (m_pMenuBar.get() != nullptr && m_isMenuBarVisible)
 	{
 		m_pMenuBar->draw();
+	}
+}
+
+bool CSiv3dWindowMenu::GetLastItemChecked() const
+{
+	if (m_pMenuBar.get() != nullptr)
+	{
+		return m_pMenuBar->getItemChecked(m_lastItemIndex);
+	}
+	return false;
+}
+
+void CSiv3dWindowMenu::SetLastItemChecked(bool checked)
+{
+	if (m_pMenuBar.get() != nullptr)
+	{
+		m_pMenuBar->setItemChecked(m_lastItemIndex, checked);
 	}
 }

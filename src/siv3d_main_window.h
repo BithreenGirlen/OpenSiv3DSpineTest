@@ -15,12 +15,16 @@ public:
 private:
 	CSiv3dSpinePlayer m_siv3dSpinePlayer;
 	std::unique_ptr<s3d::RenderTexture> m_pSpinePlayerTexture;
+	std::unique_ptr<s3d::RenderTexture> m_pSpineTrackTexture;
+	bool isTrackHidden = false;
 
 	CSiv3dWindowMenu m_siv3dWindowMenu;
 
 	void MenuOnOpenFile();
 
 	void MenuOnSnapImage();
+
+	void MenuOnHideTrack();
 
 	void ResizeWindow();
 

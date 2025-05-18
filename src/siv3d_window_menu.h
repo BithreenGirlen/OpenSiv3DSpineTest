@@ -20,12 +20,16 @@ public:
 
 	void Update();
 	void Draw();
+
+	bool GetLastItemChecked() const;
+	void SetLastItemChecked(bool checked);
 private:
 	std::unique_ptr<s3d::SimpleMenuBar> m_pMenuBar;
 	s3d::Array<std::pair<s3d::String, s3d::Array<s3d::String>>> m_menuItems;
 	s3d::Array<s3d::Array<std::function<void()>>> m_menuCallbacks;
 
 	bool m_isMenuBarVisible = true;
+	s3d::MenuBarItemIndex m_lastItemIndex;
 };
 
 #endif // !SIV3D_WINDOW_MENU_H_

@@ -40,7 +40,8 @@ public:
 	void ToggleBlendModeAdoption();
 	void ToggleDrawOrder();
 
-	const char* GetCurrentAnimationNameWithTrackTime(float* fTrackTime = nullptr);
+	const char* GetCurrentAnimationName();
+	void GetCurrentAnimationTime(float* fTrack, float* fLast, float* fStart, float* fEnd);
 
 	std::vector<std::string> GetSlotList();
 	const std::vector<std::string>& GetSkinList() const;

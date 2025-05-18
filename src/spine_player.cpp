@@ -193,7 +193,7 @@ void CSpinePlayer::ToggleDrawOrder()
 	m_bDrawOrderReversed ^= true;
 }
 /*現在の動作名と経過時間取得*/
-const char* CSpinePlayer::GetCurrentAnimationNameWithTrackTime(float* fTrackTime)
+const char* CSpinePlayer::GetCurrentAnimationName()
 {
 	for (const auto& pDrawable : m_drawables)
 	{
@@ -203,16 +203,33 @@ const char* CSpinePlayer::GetCurrentAnimationNameWithTrackTime(float* fTrackTime
 			spine::Animation* pAnimation = tracks[i]->getAnimation();
 			if (pAnimation != nullptr)
 			{
-				if (fTrackTime != nullptr)
-				{
-					*fTrackTime = tracks[i]->getTrackTime();
-				}
 				return pAnimation->getName().buffer();
 			}
 		}
 	}
 
 	return nullptr;
+}
+
+void CSpinePlayer::GetCurrentAnimationTime(float* fTrack, float* fLast, float* fStart, float* fEnd)
+{
+	for (const auto& pDrawable : m_drawables)
+	{
+		auto& tracks = pDrawable->animationState->getTracks();
+		for (size_t i = 0; i < tracks.size(); ++i)
+		{
+			spine::Animation* pAnimation = tracks[i]->getAnimation();
+			if (pAnimation != nullptr)
+			{
+				if (fTrack != nullptr)*fTrack = tracks[i]->getTrackTime();
+				if (fLast != nullptr)*fLast = tracks[i]->getAnimationLast();
+				if (fStart != nullptr)*fStart = tracks[i]->getAnimationStart();
+				if (fEnd != nullptr)*fEnd = tracks[i]->getAnimationEnd();
+
+				return;
+			}
+		}
+	}
 }
 /*槽溝名称引き渡し*/
 std::vector<std::string> CSpinePlayer::GetSlotList()
