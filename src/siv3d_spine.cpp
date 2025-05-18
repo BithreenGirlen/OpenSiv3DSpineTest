@@ -48,7 +48,7 @@ static s3d::BlendState g_s3dBlendStateAdd = s3d::BlendState
 static s3d::BlendState g_s3dBlendStateAddPma = s3d::BlendState
 (
 	true,
-	s3d::Blend::SrcAlpha,
+	s3d::Blend::One,
 	s3d::Blend::One,
 	s3d::BlendOp::Add,
 	s3d::Blend::One,
@@ -56,14 +56,14 @@ static s3d::BlendState g_s3dBlendStateAddPma = s3d::BlendState
 	s3d::BlendOp::Add
 );
 /* 混色法: 乗算 */
-static s3d::BlendState g_s3dBlendMultiply = s3d::BlendState
+static s3d::BlendState g_s3dBlendStateMultiply = s3d::BlendState
 (
 	true,
 	s3d::Blend::DestColor,
 	s3d::Blend::InvSrcAlpha,
 	s3d::BlendOp::Add,
-	s3d::Blend::Zero,
-	s3d::Blend::One,
+	s3d::Blend::InvSrcAlpha,
+	s3d::Blend::InvSrcAlpha,
 	s3d::BlendOp::Add
 );
 /* 混色法: 反転乗算 */
@@ -293,7 +293,7 @@ void CS3dSpineDrawable::Draw()
 			s3dBlendState = isAlphaPremultiplied ? g_s3dBlendStateAddPma : g_s3dBlendStateAdd;
 			break;
 		case spine::BlendMode_Multiply:
-			s3dBlendState = g_s3dBlendMultiply;
+			s3dBlendState = g_s3dBlendStateMultiply;
 			break;
 		case spine::BlendMode_Screen:
 			s3dBlendState = g_s3dBlendStateScreen;
@@ -339,7 +339,12 @@ bool CS3dSpineDrawable::IsSlotToBeLeftOut(const spine::String& slotName)
 
 void CS3dTextureLoader::load(spine::AtlasPage& page, const spine::String& path)
 {
-	s3d::Texture* pTexture = new s3d::Texture(s3d::Unicode::FromUTF8(path.buffer()));
+	s3d::FilePath filePath = s3d::Unicode::FromUTF8(path.buffer());
+	if (filePath.starts_with(U"//"))
+	{
+		filePath.replace(U"/", U"\\");
+	}
+	s3d::Texture* pTexture = new s3d::Texture(filePath);
 	if (pTexture == nullptr)return;
 
 	if (page.width == 0 || page.height == 0)
