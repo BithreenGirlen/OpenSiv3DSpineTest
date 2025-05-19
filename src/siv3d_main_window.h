@@ -16,7 +16,8 @@ private:
 	CSiv3dSpinePlayer m_siv3dSpinePlayer;
 	std::unique_ptr<s3d::RenderTexture> m_pSpinePlayerTexture;
 	std::unique_ptr<s3d::RenderTexture> m_pSpineTrackTexture;
-	bool isTrackHidden = false;
+
+	bool m_isSpineTrackHidden = false;
 
 	CSiv3dWindowMenu m_siv3dWindowMenu;
 

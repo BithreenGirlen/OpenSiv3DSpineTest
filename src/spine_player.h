@@ -21,6 +21,7 @@ public:
 
 	bool LoadSpineFromFile(const std::vector<std::string>& atlasPaths, const std::vector<std::string>& skelPaths, bool bIsBinary);
 	bool LoadSpineFromMemory(const std::vector<std::string>& atlasData, const std::vector<std::string>& atlasPaths, const std::vector<std::string>& skelData, bool bIsBinary);
+	bool HasSpineBeenLoaded() const;
 
 	virtual void Update(float fDelta);
 	virtual void Redraw() = 0;

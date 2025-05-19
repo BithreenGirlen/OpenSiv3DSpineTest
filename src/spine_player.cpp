@@ -73,6 +73,11 @@ bool CSpinePlayer::LoadSpineFromMemory(const std::vector<std::string>& atlasData
 
 	return SetupDrawer();
 }
+
+bool CSpinePlayer::HasSpineBeenLoaded() const
+{
+	return !m_drawables.empty();
+}
 /*状態更新*/
 void CSpinePlayer::Update(float fDelta)
 {

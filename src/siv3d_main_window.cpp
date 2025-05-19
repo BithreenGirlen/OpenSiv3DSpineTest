@@ -120,31 +120,35 @@ void CSiv3dMainWindow::Display()
 			m_pSpinePlayerTexture->draw(0, menuBarHeight);
 		}
 
-		if (m_pSpineTrackTexture.get() != nullptr && !isTrackHidden)
+		if (m_pSpineTrackTexture.get() != nullptr && !m_isSpineTrackHidden)
 		{
-			m_pSpineTrackTexture->clear(s3d::ColorF(0.f, 0.f));
+			const char* pzAnimationName = m_siv3dSpinePlayer.GetCurrentAnimationName();
+			if (pzAnimationName != nullptr)
 			{
-				const s3d::ScopedRenderTarget2D spinePlayerRenderTarget(*m_pSpineTrackTexture.get());
-				const s3d::ScopedRenderStates2D s3dScopedRenderState2D(Siv3dSpineBlendMode::Normal, s3d::SamplerState::ClampLinear);
-
-				/* 毎ループ実行すまじき処理だが、取り敢えず試験用で。 */
-				s3d::String animationName = s3d::Unicode::FromUTF8(m_siv3dSpinePlayer.GetCurrentAnimationName());
-				s3d::Vector4D<float> animationWatch{};
-				m_siv3dSpinePlayer.GetCurrentAnimationTime(&animationWatch.x, &animationWatch.y, &animationWatch.z, &animationWatch.w);
-				
+				m_pSpineTrackTexture->clear(s3d::ColorF(0.f, 0.f));
 				{
-					using namespace s3d;
-					const auto& formatted =	U"Track: {:.2f}\nLast: {:.2f}"_fmt(animationWatch.x, animationWatch.y);
-					trackFont(formatted).draw(s3d::Vec2{ 0, 0 }, s3d::ColorF{ 1.f });
+					const s3d::ScopedRenderTarget2D spinePlayerRenderTarget(*m_pSpineTrackTexture.get());
+					const s3d::ScopedRenderStates2D s3dScopedRenderState2D(Siv3dSpineBlendMode::Normal, s3d::SamplerState::ClampLinear);
+
+					/* 毎ループ実行すまじき処理だが、取り敢えず試験用で。 */
+					s3d::String animationName = s3d::Unicode::FromUTF8(m_siv3dSpinePlayer.GetCurrentAnimationName());
+					s3d::Vector4D<float> animationWatch{};
+					m_siv3dSpinePlayer.GetCurrentAnimationTime(&animationWatch.x, &animationWatch.y, &animationWatch.z, &animationWatch.w);
+
+					{
+						using namespace s3d;
+						const auto& formatted = U"Track: {:.2f}\nLast: {:.2f}"_fmt(animationWatch.x, animationWatch.y);
+						trackFont(formatted).draw(s3d::Vec2{ 0, 0 }, s3d::ColorF{ 1.f });
+					}
+
+					double trackValue = animationWatch.y;
+					double trackMin = animationWatch.z;
+					double trackMax = animationWatch.w;
+					s3d::SimpleGUI::Slider(animationName, trackValue, trackMin, trackMax, s3d::Vec2{ 0, kTrackFontSize * 3.2 }, animationName.size() * 12.0);
 				}
 
-				double trackValue = animationWatch.y;
-				double trackMin = animationWatch.z;
-				double trackMax = animationWatch.w;
-				s3d::SimpleGUI::Slider(animationName, trackValue, trackMin, trackMax, s3d::Vec2{ 0, kTrackFontSize * 3.2}, animationName.size() * 12.0);
+				m_pSpineTrackTexture->draw(0, menuBarHeight);
 			}
-
-			m_pSpineTrackTexture->draw(0, menuBarHeight);
 		}
 
 		m_siv3dWindowMenu.Draw();
@@ -178,11 +182,8 @@ void CSiv3dMainWindow::MenuOnOpenFile()
 	atlasPaths.push_back(s3d::Unicode::ToUTF8(selectedAtlas.value()));
 	skelPaths.push_back(s3d::Unicode::ToUTF8(selectedSkeleton.value()));
 
-	bool hasBeenLoaded = m_siv3dSpinePlayer.LoadSpineFromFile(atlasPaths, skelPaths, isBinarySkel);
-	if (hasBeenLoaded)
-	{
-		ResizeWindow();
-	}
+	m_siv3dSpinePlayer.LoadSpineFromFile(atlasPaths, skelPaths, isBinarySkel);
+	ResizeWindow();
 }
 
 void CSiv3dMainWindow::MenuOnSnapImage()
@@ -202,11 +203,13 @@ void CSiv3dMainWindow::MenuOnHideTrack()
 {
 	bool checked = m_siv3dWindowMenu.GetLastItemChecked();
 	m_siv3dWindowMenu.SetLastItemChecked(!checked);
-	isTrackHidden = !checked;
+	m_isSpineTrackHidden = !checked;
 }
 
 void CSiv3dMainWindow::ResizeWindow()
 {
+	if (!m_siv3dSpinePlayer.HasSpineBeenLoaded())return;
+
 	s3d::Vector2D<float> fCanvasSize = m_siv3dSpinePlayer.GetBaseSize();
 	float fScale = m_siv3dSpinePlayer.GetCanvasScale();
 
