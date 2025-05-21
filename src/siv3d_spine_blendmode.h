@@ -38,7 +38,7 @@ struct Siv3dSpineBlendMode abstract final
 	{
 		true,
 		s3d::Blend::DestColor, s3d::Blend::InvSrcAlpha, s3d::BlendOp::Add,
-		s3d::Blend::InvSrcAlpha, s3d::Blend::InvSrcAlpha, s3d::BlendOp::Add
+		s3d::Blend::One, s3d::Blend::InvSrcAlpha, s3d::BlendOp::Add
 	};
 	/* 混色法: 反転乗算 */
 	static constexpr s3d::BlendState Screen = s3d::BlendState
