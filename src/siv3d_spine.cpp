@@ -93,7 +93,6 @@ void CS3dSpineDrawable::Draw()
 		spine::Color* pAttachmentColor = nullptr;
 
 		s3d::Texture *pTexture = nullptr;
-		bool hasPmaAttribute = false;
 
 		if (pAttachment->getRTTI().isExactly(spine::RegionAttachment::rtti))
 		{
@@ -117,11 +116,15 @@ void CS3dSpineDrawable::Draw()
 
 #ifdef SPINE_4_1_OR_LATER
 			spine::AtlasRegion* pAtlasRegion = static_cast<spine::AtlasRegion*>(pRegionAttachment->getRegion());
-			hasPmaAttribute = pAtlasRegion->page->pma;
 
+			isAlphaPremultiplied = pAtlasRegion->page->pma;
 			pTexture = reinterpret_cast<s3d::Texture*>(pAtlasRegion->rendererObject);
 #else
-			pTexture = reinterpret_cast<s3d::Texture*>(static_cast<spine::AtlasRegion*>(pRegionAttachment->getRendererObject())->page->getRendererObject());
+			spine::AtlasRegion* pAtlasRegion = static_cast<spine::AtlasRegion*>(pRegionAttachment->getRendererObject());
+#ifdef SPINE_4_0
+			isAlphaPremultiplied = pAtlasRegion->page->pma;
+#endif
+			pTexture = reinterpret_cast<s3d::Texture*>(pAtlasRegion->page->getRendererObject());
 #endif
 		}
 		else if (pAttachment->getRTTI().isExactly(spine::MeshAttachment::rtti))
@@ -141,12 +144,15 @@ void CS3dSpineDrawable::Draw()
 
 #ifdef SPINE_4_1_OR_LATER
 			spine::AtlasRegion* pAtlasRegion = static_cast<spine::AtlasRegion*>(pMeshAttachment->getRegion());
-			/* 実際にはこの属性の追加は4.0から */
-			hasPmaAttribute = pAtlasRegion->page->pma;
 
+			isAlphaPremultiplied = pAtlasRegion->page->pma;
 			pTexture = reinterpret_cast<s3d::Texture*>(pAtlasRegion->rendererObject);
 #else
-			pTexture = reinterpret_cast<s3d::Texture*>(static_cast<spine::AtlasRegion*>(pMeshAttachment->getRendererObject())->page->getRendererObject());
+			spine::AtlasRegion* pAtlasRegion = static_cast<spine::AtlasRegion*>(pMeshAttachment->getRendererObject());
+#ifdef SPINE_4_0
+			isAlphaPremultiplied = pAtlasRegion->page->pma;
+#endif
+			pTexture = reinterpret_cast<s3d::Texture*>(pAtlasRegion->page->getRendererObject());
 #endif
 		}
 		else if (pAttachment->getRTTI().isExactly(spine::ClippingAttachment::rtti))
@@ -216,9 +222,6 @@ void CS3dSpineDrawable::Draw()
 			m_buffer2d.indices.push_back(triangleIndex);
 		}
 
-#ifdef SPINE_4_1_OR_LATER
-		isAlphaPremultiplied = hasPmaAttribute;
-#endif
 		s3d::BlendState s3dBlendState;
 		spine::BlendMode spineBlendMode = isBlendModeNormalForced ? spine::BlendMode::BlendMode_Normal : slot.getData().getBlendMode();
 		switch (spineBlendMode)
