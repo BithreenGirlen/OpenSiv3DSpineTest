@@ -61,13 +61,13 @@ void CSiv3dMainWindow::Display()
 				/* 枠表示・消去 */
 				if (s3d::Window::GetStyle() != s3d::WindowStyle::Frameless)
 				{
-					s3d::Rect windowRect = s3d::Window::GetState().bounds;
-					s3d::Window::SetPos({ windowRect.x, s3d::Max(0, windowRect.y) });
+					s3d::Window::SetPos({});
 					s3d::Window::SetStyle(s3d::WindowStyle::Frameless);
 				}
 				else
 				{
-					s3d::Window::SetPos({});
+					s3d::Rect windowRect = s3d::Window::GetState().bounds;
+					s3d::Window::SetPos({ windowRect.x, s3d::Max(0, windowRect.y) });
 					s3d::Window::SetStyle(s3d::WindowStyle::Sizable);
 				}
 			}
@@ -105,6 +105,10 @@ void CSiv3dMainWindow::Display()
 			m_siv3dWindowMenu.SetVisibility(!m_siv3dWindowMenu.IsVisible());
 			ResizeWindow();
 		}
+		else if (s3d::KeyA.up())
+		{
+			m_siv3dSpinePlayer.TogglePma();
+		}
 
 		m_siv3dSpinePlayer.Update(static_cast<float>(s3d::Scene::DeltaTime()));
 
@@ -131,7 +135,7 @@ void CSiv3dMainWindow::Display()
 					const s3d::ScopedRenderStates2D s3dScopedRenderState2D(Siv3dSpineBlendMode::Normal, s3d::SamplerState::ClampLinear);
 
 					/* 毎ループ実行すまじき処理だが、取り敢えず試験用で。 */
-					s3d::String animationName = s3d::Unicode::FromUTF8(m_siv3dSpinePlayer.GetCurrentAnimationName());
+					s3d::String animationName = s3d::Unicode::FromUTF8(pzAnimationName);
 					s3d::Vector4D<float> animationWatch{};
 					m_siv3dSpinePlayer.GetCurrentAnimationTime(&animationWatch.x, &animationWatch.y, &animationWatch.z, &animationWatch.w);
 
@@ -226,8 +230,19 @@ void CSiv3dMainWindow::ResizeWindow()
 
 	/* メニュー表示時はクライアント領域を高さ分大きく取り、且つ、他の描画対象物の描画開始位置を高さ分下げる。*/
 	s3d::int32 menuBarHeight = m_siv3dWindowMenu.IsVisible() ? s3d::SimpleMenuBar::MenuBarHeight : 0;
+
+	/*
+	 * s3d::Window::ResizeActual()による寸法変更時、
+	 * 枠ありウィンドウの場合、フレームバッファの大きさはデスクトップ解像度 + 枠幅が上限となるのだが、
+	 * 枠なしウィンドウの場合はこの上限がなくなり、設定した値通りの大きさになる。(テクスチャ限度まで？)
+	 * (1) 視点補正を簡易にするため、また、(2) 保存画像の大きさを解像度内に抑えるため、渡す前に上限を設ける。
+	 */
+	const auto monitorInfo = s3d::System::GetCurrentMonitor();
+	iClientWidth = s3d::Min(iClientWidth, monitorInfo.displayRect.w);
+	iClientHeight = s3d::Min(iClientHeight, monitorInfo.displayRect.h);
+
 	s3d::Window::ResizeActual(iClientWidth, iClientHeight + menuBarHeight, s3d::YesNo<s3d::Centering_tag>::No);
-	
+
 	/* Spine描画先 */
 	s3d::Size spinePlayerSize = s3d::Size(iClientWidth, iClientHeight);
 	m_pSpinePlayerTexture = std::make_unique<s3d::RenderTexture>(spinePlayerSize);
