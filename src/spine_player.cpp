@@ -154,7 +154,7 @@ void CSpinePlayer::ShiftAnimation()
 	if (m_nAnimationIndex >= m_animationNames.size())m_nAnimationIndex = 0;
 
 	ClearAnimationTracks();
-	UpdateAnimation();
+	RestartAnimation();
 }
 /*装い移行*/
 void CSpinePlayer::ShiftSkin()
@@ -173,6 +173,21 @@ void CSpinePlayer::ShiftSkin()
 		{
 			pDrawable->skeleton->setSkin(skin);
 			pDrawable->skeleton->setSlotsToSetupPose();
+		}
+	}
+}
+/*動作再始動*/
+void CSpinePlayer::RestartAnimation()
+{
+	if (m_nAnimationIndex >= m_animationNames.size())return;
+	const char* szAnimationName = m_animationNames[m_nAnimationIndex].c_str();
+
+	for (const auto& pDrawable : m_drawables)
+	{
+		spine::Animation* pAnimation = pDrawable->skeleton->getData()->findAnimation(szAnimationName);
+		if (pAnimation != nullptr)
+		{
+			pDrawable->animationState->setAnimation(0, pAnimation->getName(), true);
 		}
 	}
 }
@@ -398,7 +413,7 @@ bool CSpinePlayer::SetupDrawer()
 
 	}
 
-	UpdateAnimation();
+	RestartAnimation();
 
 	ResetScale();
 
@@ -494,21 +509,6 @@ void CSpinePlayer::UpdateTimeScale()
 	for (const auto& pDrawble : m_drawables)
 	{
 		pDrawble->timeScale = m_fTimeScale;
-	}
-}
-/*動作適用*/
-void CSpinePlayer::UpdateAnimation()
-{
-	if (m_nAnimationIndex >= m_animationNames.size())return;
-	const char* szAnimationName = m_animationNames[m_nAnimationIndex].c_str();
-
-	for (const auto& pDrawable : m_drawables)
-	{
-		spine::Animation* pAnimation = pDrawable->skeleton->getData()->findAnimation(szAnimationName);
-		if (pAnimation != nullptr)
-		{
-			pDrawable->animationState->setAnimation(0, pAnimation->getName(), true);
-		}
 	}
 }
 /*合成動作消去*/

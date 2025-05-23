@@ -37,6 +37,8 @@ public:
 	void ShiftAnimation();
 	void ShiftSkin();
 
+	void RestartAnimation();
+
 	void TogglePma();
 	void ToggleBlendModeAdoption();
 	void ToggleDrawOrder();
@@ -94,7 +96,6 @@ protected:
 	void UpdateSkeletonScale();
 	void UpdateTimeScale();
 
-	void UpdateAnimation();
 	void ClearAnimationTracks();
 };
 

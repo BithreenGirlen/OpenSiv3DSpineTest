@@ -11,7 +11,13 @@ CSiv3dMainWindow::CSiv3dMainWindow(const char32_t* windowName)
 		s3d::Window::SetTitle(windowName);
 	}
 
-	s3d::Window::SetStyle(s3d::WindowStyle::Sizable);
+	/*
+	* 各画面上限
+	* Scene (Virtual mode): なし
+	* Scene (Actual mode): デスクトップ解像度 + 枠幅
+	* Frame: デスクトップ解像度 + 枠幅
+	* Virtual: デスクトップ解像度 / DPI
+	*/
 	s3d::Scene::SetResizeMode(s3d::ResizeMode::Actual);
 
 	InitialiseMenuBar();
@@ -68,7 +74,7 @@ void CSiv3dMainWindow::Display()
 				{
 					s3d::Rect windowRect = s3d::Window::GetState().bounds;
 					s3d::Window::SetPos({ windowRect.x, s3d::Max(0, windowRect.y) });
-					s3d::Window::SetStyle(s3d::WindowStyle::Sizable);
+					s3d::Window::SetStyle(s3d::WindowStyle::Fixed);
 				}
 			}
 			else
@@ -122,6 +128,26 @@ void CSiv3dMainWindow::Display()
 			}
 
 			m_pSpinePlayerTexture->draw(0, menuBarHeight);
+
+			if (m_siv3dRecorder.IsUnderRecording())
+			{
+				s3d::Vector4D<float> animationWatch{};
+				m_siv3dSpinePlayer.GetCurrentAnimationTime(&animationWatch.x, &animationWatch.y, &animationWatch.z, &animationWatch.w);
+				/* 一周し終わったら書き出し。 */
+				if (animationWatch.x > animationWatch.w)
+				{
+					const char* pzAnimationName = m_siv3dSpinePlayer.GetCurrentAnimationName();
+					s3d::String fileName = pzAnimationName == nullptr ? U"output" : s3d::Unicode::FromUTF8(pzAnimationName);
+					s3d::FilePath filePath = s3d::FileSystem::ParentPath(s3d::FileSystem::ModulePath()) + fileName;
+
+					m_siv3dRecorder.End(filePath);
+				}
+				else
+				{
+					s3d::Graphics2D::Flush();
+					m_siv3dRecorder.CommitFrame(*m_pSpinePlayerTexture.get());
+				}
+			}
 		}
 
 		if (m_pSpineTrackTexture.get() != nullptr && !m_isSpineTrackHidden)
@@ -203,6 +229,24 @@ void CSiv3dMainWindow::MenuOnSnapImage()
 	}
 }
 
+void CSiv3dMainWindow::MenuOnExportAsGif()
+{
+	if (m_pSpinePlayerTexture.get() != nullptr)
+	{
+		m_siv3dSpinePlayer.RestartAnimation();
+		m_siv3dRecorder.Start(s3d::Size(m_pSpinePlayerTexture->width(), m_pSpinePlayerTexture->height()), CSiv3dRecorder::EOutputType::Gif);
+	}
+}
+
+void CSiv3dMainWindow::MenuOnExportAsVideo()
+{
+	if (m_pSpinePlayerTexture.get() != nullptr)
+	{
+		m_siv3dSpinePlayer.RestartAnimation();
+		m_siv3dRecorder.Start(s3d::Size(m_pSpinePlayerTexture->width(), m_pSpinePlayerTexture->height()), CSiv3dRecorder::EOutputType::Video);
+	}
+}
+
 void CSiv3dMainWindow::MenuOnHideTrack()
 {
 	bool checked = m_siv3dWindowMenu.GetLastItemChecked();
@@ -212,7 +256,7 @@ void CSiv3dMainWindow::MenuOnHideTrack()
 
 void CSiv3dMainWindow::ResizeWindow()
 {
-	if (!m_siv3dSpinePlayer.HasSpineBeenLoaded())return;
+	if (!m_siv3dSpinePlayer.HasSpineBeenLoaded() || m_siv3dRecorder.IsUnderRecording())return;
 
 	s3d::Vector2D<float> fCanvasSize = m_siv3dSpinePlayer.GetBaseSize();
 	float fScale = m_siv3dSpinePlayer.GetCanvasScale();
@@ -220,23 +264,10 @@ void CSiv3dMainWindow::ResizeWindow()
 	s3d::int32 iClientWidth = static_cast<s3d::int32>(fCanvasSize.x * fScale);
 	s3d::int32 iClientHeight = static_cast<s3d::int32>(fCanvasSize.y * fScale);
 
-	/*
-	* 各画面上限
-	* Scene (Virtual mode): なし
-	* Scene (Actual mode): デスクトップ解像度 + 枠幅
-	* Frame: デスクトップ解像度 + 枠幅
-	* Virtual: デスクトップ解像度 / DPI
-	*/
-
 	/* メニュー表示時はクライアント領域を高さ分大きく取り、且つ、他の描画対象物の描画開始位置を高さ分下げる。*/
 	s3d::int32 menuBarHeight = m_siv3dWindowMenu.IsVisible() ? s3d::SimpleMenuBar::MenuBarHeight : 0;
 
-	/*
-	 * s3d::Window::ResizeActual()による寸法変更時、
-	 * 枠ありウィンドウの場合、フレームバッファの大きさはデスクトップ解像度 + 枠幅が上限となるのだが、
-	 * 枠なしウィンドウの場合はこの上限がなくなり、設定した値通りの大きさになる。(テクスチャ限度まで？)
-	 * (1) 視点補正を簡易にするため、また、(2) 保存画像の大きさを解像度内に抑えるため、渡す前に上限を設ける。
-	 */
+	/* 書き出しファイルの寸法を解像度内に抑えるため上限を設ける。 */
 	const auto monitorInfo = s3d::System::GetCurrentMonitor();
 	iClientWidth = s3d::Min(iClientWidth, monitorInfo.displayRect.w);
 	iClientHeight = s3d::Min(iClientHeight, monitorInfo.displayRect.h);
@@ -257,6 +288,7 @@ void CSiv3dMainWindow::InitialiseMenuBar()
 {
 	if (!m_siv3dWindowMenu.HasBeenInitialised())
 	{
+		/* File群 */
 		const std::pair<s3d::String, s3d::Array<s3d::String>> fileMenu
 		{
 			U"File", { U"Open file"}
@@ -265,16 +297,18 @@ void CSiv3dMainWindow::InitialiseMenuBar()
 		{
 			std::bind(&CSiv3dMainWindow::MenuOnOpenFile, this)
 		};
-
+		/* Image群 */
 		const std::pair<s3d::String, s3d::Array<s3d::String>> imageMenu
 		{
-			U"Image", { U"Snap as webp"}
+			U"Image", { U"Snap as Webp", /*U"Export as GIF",*/ U"Export as video"}
 		};
 		const s3d::Array<std::function<void()>> imageMenuCallbacks
 		{
 			std::bind(&CSiv3dMainWindow::MenuOnSnapImage, this),
+			//std::bind(&CSiv3dMainWindow::MenuOnExportAsGif, this),
+			std::bind(&CSiv3dMainWindow::MenuOnExportAsVideo, this)
 		};
-
+		/* Window群 */
 		const std::pair<s3d::String, s3d::Array<s3d::String>> windowMenu
 		{
 			U"Window", { U"Hide track"}

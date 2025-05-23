@@ -2,6 +2,7 @@
 #define SIV3D_MAIN_WINDOW_H_
 
 #include "siv3d_spine_player.h"
+#include "siv3d_recorder.h"
 #include "siv3d_window_menu.h"
 
 class CSiv3dMainWindow
@@ -19,11 +20,15 @@ private:
 
 	bool m_isSpineTrackHidden = false;
 
+	CSiv3dRecorder m_siv3dRecorder;
+
 	CSiv3dWindowMenu m_siv3dWindowMenu;
 
 	void MenuOnOpenFile();
 
 	void MenuOnSnapImage();
+	void MenuOnExportAsGif();
+	void MenuOnExportAsVideo();
 
 	void MenuOnHideTrack();
 
