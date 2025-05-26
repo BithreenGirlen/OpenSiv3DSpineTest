@@ -160,6 +160,7 @@
     <ClCompile Include="..\src\siv3d_window_menu.cpp" />
     <ClCompile Include="..\src\spine_loader.cpp" />
     <ClCompile Include="..\src\spine_player.cpp" />
+    <ClCompile Include="..\src\windows\wic_gif_encoder.cpp" />
     <ClCompile Include="deps\spine-cpp-4.1\src\spine\Animation.cpp" />
     <ClCompile Include="deps\spine-cpp-4.1\src\spine\AnimationState.cpp" />
     <ClCompile Include="deps\spine-cpp-4.1\src\spine\AnimationStateData.cpp" />
@@ -239,6 +240,7 @@
     <ClInclude Include="..\src\siv3d_window_menu.h" />
     <ClInclude Include="..\src\spine_loader.h" />
     <ClInclude Include="..\src\spine_player.h" />
+    <ClInclude Include="..\src\windows\wic_gif_encoder.h" />
     <ClInclude Include="pch.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

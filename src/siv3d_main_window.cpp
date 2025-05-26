@@ -115,6 +115,10 @@ void CSiv3dMainWindow::Display()
 		{
 			m_siv3dSpinePlayer.TogglePma();
 		}
+		else if (s3d::KeyS.up())
+		{
+			m_siv3dSpinePlayer.ShiftSkin();
+		}
 
 		m_siv3dSpinePlayer.Update(static_cast<float>(s3d::Scene::DeltaTime()));
 
@@ -300,12 +304,12 @@ void CSiv3dMainWindow::InitialiseMenuBar()
 		/* Image群 */
 		const std::pair<s3d::String, s3d::Array<s3d::String>> imageMenu
 		{
-			U"Image", { U"Snap as Webp", /*U"Export as GIF",*/ U"Export as video"}
+			U"Image", { U"Snap as Webp", U"Export as GIF", U"Export as video"}
 		};
 		const s3d::Array<std::function<void()>> imageMenuCallbacks
 		{
 			std::bind(&CSiv3dMainWindow::MenuOnSnapImage, this),
-			//std::bind(&CSiv3dMainWindow::MenuOnExportAsGif, this),
+			std::bind(&CSiv3dMainWindow::MenuOnExportAsGif, this),
 			std::bind(&CSiv3dMainWindow::MenuOnExportAsVideo, this)
 		};
 		/* Window群 */

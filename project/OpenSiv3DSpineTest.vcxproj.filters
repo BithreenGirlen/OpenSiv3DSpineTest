@@ -19,6 +19,12 @@
     <Filter Include="Source File\deps\spine-cpp-4.1">
       <UniqueIdentifier>{78771afb-3716-487d-91a5-f7ff8041931c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header File\windows">
+      <UniqueIdentifier>{07ea5cf7-fa28-481f-8807-3d99555e617f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source File\windows">
+      <UniqueIdentifier>{8b73e0ee-c4d2-435f-99b3-54d2fb1548af}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\Main.cpp">
@@ -234,6 +240,9 @@
     <ClCompile Include="..\src\siv3d_recorder.cpp">
       <Filter>Source File</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\windows\wic_gif_encoder.cpp">
+      <Filter>Source File\windows</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="App\Resource.rc">
@@ -267,6 +276,9 @@
     </ClInclude>
     <ClInclude Include="..\src\siv3d_recorder.h">
       <Filter>Header File</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\windows\wic_gif_encoder.h">
+      <Filter>Header File\windows</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

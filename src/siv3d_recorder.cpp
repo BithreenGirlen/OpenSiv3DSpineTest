@@ -1,6 +1,10 @@
 ﻿
 #include "siv3d_recorder.h"
 
+#if SIV3D_PLATFORM(WINDOWS)
+#include "windows/wic_gif_encoder.h"
+#endif
+
 
 CSiv3dRecorder::CSiv3dRecorder()
 {
@@ -73,7 +77,7 @@ bool CSiv3dRecorder::End(s3d::FilePath& filePath)
 			{
 				filePath += U".gif";
 			}
-			else
+			else if(m_outputType == EOutputType::Video)
 			{
 				filePath += U".mp4";
 			}
@@ -83,6 +87,22 @@ bool CSiv3dRecorder::End(s3d::FilePath& filePath)
 	bool result = false;
 	if (m_outputType == EOutputType::Gif)
 	{
+#if SIV3D_PLATFORM(WINDOWS)
+		CWicGifEncoder wicGifEncoder;
+		wicGifEncoder.Initialise(s3d::Unicode::ToWstring(filePath).c_str());
+		if (wicGifEncoder.HasBeenInitialised())
+		{
+			float delay = static_cast<float>(1.0 / m_fps);
+			for (auto& frame : m_frames)
+			{
+				s3d::Image image;
+				frame.readAsImage(image);
+				result |= wicGifEncoder.CommitFrame(image.width(), image.height(), image.stride(), image.dataAsUint8(), true, delay);
+				frame.release();
+			}
+			wicGifEncoder.Finalise();
+		}
+#else
 		s3d::AnimatedGIFWriter animatedGifWriter;
 		animatedGifWriter.open(filePath, m_frameSize.x, m_frameSize.y, s3d::YesNo<s3d::Dither_tag>::Yes, s3d::YesNo<s3d::HasAlpha_tag>::Yes);
 		if (animatedGifWriter.isOpen())
@@ -92,12 +112,20 @@ bool CSiv3dRecorder::End(s3d::FilePath& filePath)
 			{
 				s3d::Image image;
 				frame.readAsImage(image);
+				for (auto& pixel : image)
+				{
+					if (pixel.a > 127)
+					{
+						pixel.a = 255;
+					}
+				}
 
 				result |= animatedGifWriter.writeFrame(image, delay);
 				frame.release();
 			}
 			animatedGifWriter.close();
 		}
+#endif
 	}
 	else if (m_outputType == EOutputType::Video)
 	{
