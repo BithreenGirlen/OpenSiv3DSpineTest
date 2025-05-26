@@ -17,30 +17,16 @@ public:
 		Gif,
 		Video,
 	};
-	/// <summary>
-	/// 録画開始。
-	/// </summary>
-	/// <param name="frameSize">フレーム寸法</param>
-	/// <param name="outputType">出力形式</param>
-	/// <param name="fps"></param>
-	/// <returns></returns>
+
 	bool Start(const s3d::Size &frameSize, EOutputType outputType, s3d::int32 fps = DefaultFps);
 
 	bool IsUnderRecording() const;
 	EOutputType GetOutputType() const;
 
-	/// <summary>
-	/// フレーム保存。設定FPSより早く呼び出された場合何もしない。
-	/// </summary>
-	/// <param name="frame">GPU資源</param>
-	/// <returns>録画データとして蓄えた場合true</returns>
+	/// @brief フレーム保存。設定FPSより早く呼び出された場合何もしない。
 	bool CommitFrame(const s3d::RenderTexture& frame);
 
-	/// <summary>
-	/// 書き出し。
-	/// </summary>
-	/// <param name="filePath">出力先。拡張子はなくても可。</param>
-	/// <returns>1フレームでも書き込めたらtrue</returns>
+	/// @param filePath 出力先。拡張子はなくても可
 	bool End(s3d::FilePath& filePath);
 private:
 	static constexpr s3d::int32 DefaultFps = 30;

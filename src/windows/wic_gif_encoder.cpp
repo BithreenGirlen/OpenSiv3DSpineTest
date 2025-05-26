@@ -1,4 +1,4 @@
-
+Ôªø
 
 #include <atlbase.h>
 #include <wincodec.h>
@@ -187,7 +187,7 @@ bool CWicGifEncoder::HasBeenInitialised() const
 
 bool CWicGifEncoder::CommitFrame(unsigned int width, unsigned int height, unsigned int stride, unsigned char* pixels, bool hasAlpha, float delay)
 {
-	/* 10msíPà  */
+	/* 10msÂçò‰Ωç */
 	unsigned short delayInHundredths = static_cast<unsigned short>(delay * 100.f);
 
 	return m_impl->CommitFrame(width, height, stride, pixels, hasAlpha, delayInHundredths == 0 ? 1 : delayInHundredths);

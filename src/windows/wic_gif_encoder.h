@@ -10,16 +10,8 @@ public:
 	bool Initialise(const wchar_t *filePath);
 	bool HasBeenInitialised() const;
 
-	/// <summary>
-	/// 画素配列はRGBA32を想定。
-	/// </summary>
-	/// <param name="width">横幅</param>
-	/// <param name="height">縦幅</param>
-	/// <param name="stride"></param>
-	/// <param name="pixels">画素配列</param>
-	/// <param name="hasAlpha">透過有無</param>
-	/// <param name="delay">前フレームとの間隔(秒単位)</param>
-	/// <returns></returns>
+	/// @brief フレーム書き込み。画素配列はRGBA32を想定。
+	/// @param delay 前フレームとの間隔(秒単位)
 	bool CommitFrame(unsigned int width, unsigned int height, unsigned int stride, unsigned char* pixels, bool hasAlpha, float delay);
 
 	bool Finalise();
